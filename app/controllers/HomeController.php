@@ -7,6 +7,7 @@ Class HomeController extends BaseController
     {
         $this->loadCss('bootstrap-datetimepicker.min.css');
         
+        $this->meta('og:image', 'http://movecheapr.com/images/fb_share.png');
         $this->loadJs('https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js', ['location' => 'external']);
         $this->loadJs('bootstrap-datetimepicker.min.js');
         $this->loadJs('main.js');
