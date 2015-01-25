@@ -7,7 +7,7 @@ Class HomeController extends BaseController
     {
         $this->loadCss('bootstrap-datetimepicker.min.css');
         
-        $this->meta('og:image', 'http://movecheapr.com/images/fb_share.png');
+        $this->meta('og:image', 'http://movecheapr.com/assets/images/fb_share.png');
         $this->meta('og:title', 'Movecheapr: The only moving truck comparison engine.');
         $this->meta('og:url'  , 'http://movecheapr.com');
         
