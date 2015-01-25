@@ -35,7 +35,9 @@ class Uhaul extends Model {
             $truck_prices = [];
             
             foreach($title_matches[1] as $key=>$value) {
-                $truck_prices[] = ['type' => $title_matches[1][$key], 'price' => $price_matches[1][$key]];
+                $fmt = new NumberFormatter('en_US', NumberFormatter::CURRENCY);
+                $curr = 'USD';
+                $truck_prices[] = ['truck_length' => (int) $title_matches[1][$key], 'price' => $fmt->parseCurrency($price_matches[1][$key], $curr)];
             }
             
             return $truck_prices;
@@ -67,6 +69,7 @@ class Uhaul extends Model {
         
         $request->execute();
         if ($request->isSuccessful()) {
+            $request->close();
             return true;
         }
         throw new Exception($resquest->getErrorMessage());
@@ -80,6 +83,12 @@ class Uhaul extends Model {
             touch(APP_PATH.'storage/cookies/uhaul_cookie.txt');
         }
         
+        $f = @fopen(APP_PATH.'storage/cookies/uhaul_cookie.txt', "r+");
+        if ($f !== false) {
+            ftruncate($f, 0);
+            fclose($f);
+        }
+        
         $request->setOption(CURLOPT_FOLLOWLOCATION, true);
         $request->setOption(CURLOPT_COOKIESESSION, true );
         $request->setOption(CURLOPT_COOKIEJAR, APP_PATH.'storage/cookies/uhaul_cookie.txt' );
@@ -90,6 +99,8 @@ class Uhaul extends Model {
         if ($request->isSuccessful()) {
             
             preg_match('/<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="(.*?)".*?<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="(.*?)"/s', $request->getRawResponse(), $matches);
+            
+            $request->close();
             if(!empty($matches[1]) && !empty($matches[2])) {
                 return ['viewstate' => $matches[1], 'eventvalidation' => $matches[2]];
             }

@@ -15,38 +15,43 @@ class Budget extends Model {
     }
     
     public function getQuote(DateTime $date, $zipcode_from, $zipcode_to) {
-        $this->_setDateAndLocation($date, $zipcode_from, $zipcode_to);
-        
-        $request = new Request('https://www.budgettruck.com/DesktopModules/BudgetTruck.WebAPI/API/Truck/GetTrucks?pickupDate=&dropOffDate=');
-        
-        $request->setOption(CURLOPT_COOKIEFILE, APP_PATH.'storage/cookies/budget_cookie.txt');
-        $request->setOption(CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36');
-        
-        $request->execute();
-        if ($request->isSuccessful()) {
-            $resp_object = json_decode($request->getResponse()->getContent());
+        if($this->_setDateAndLocation($date, $zipcode_from, $zipcode_to)) {
             
-            $truck_prices = [];
+            $request = new Request('https://www.budgettruck.com/DesktopModules/BudgetTruck.WebAPI/API/Truck/GetTrucks?pickupDate=&dropOffDate=');
             
-            foreach($resp_object->trucksSorted as $truck_object) {
-                $truck_prices[] = ['type' => $truck_object->Name, 'price' => $truck_object->TruckRate];
+            $request->setOption(CURLOPT_COOKIEFILE, APP_PATH.'storage/cookies/budget_cookie.txt');
+            $request->setOption(CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36');
+            
+            $request->execute();
+            
+            if ($request->isSuccessful()) {
+                $resp_object = json_decode($request->getResponse()->getContent());
+                
+                $truck_prices = [];
+                
+                foreach($resp_object->trucksSorted as $truck_object) {
+                    if($truck_object->TruckRate > 0) {
+                        $truck_prices[] = ['truck_length' => (int) $truck_object->Name, 'price' => (float) $truck_object->TruckRate];
+                    }
+                }
+                               
+                return $truck_prices;
             }
-                           
-            return $truck_prices;
         }
         throw new Exception($resquest->getErrorMessage());
     }
 
     private function _setDateAndLocation(DateTime &$date, &$zipcode_from, &$zipcode_to) {
         
-        $request = new Request('https://www.budgettruck.com/DesktopModules/BudgetTruck.WebAPI/API/Home/AddCookie?pickDate='.$date->format('m/d/Y').'&dropDate='.$date->format('m/d/Y').'&pickUpLoc='.$zipcode_from.'&dropOffLoc='.$zipcode_to.'&Coupon=');
+        //Set cookies. Perhaps not needed, need to investigae futher
+        // $request = new Request('https://www.budgettruck.com/DesktopModules/BudgetTruck.WebAPI/API/Home/AddCookie?pickDate='.$date->format('m/d/Y').'&dropDate='.$date->format('m/d/Y').'&pickUpLoc='.$zipcode_from.'&dropOffLoc='.$zipcode_to.'&Coupon=');
+//         
+        // $request->setOption(CURLOPT_COOKIEJAR, APP_PATH.'storage/cookies/budget_cookie.txt' );
+        // $request->setOption(CURLOPT_COOKIEFILE, APP_PATH.'storage/cookies/budget_cookie.txt');
+        // $request->setOption(CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36');
+        // $request->execute();
         
-        $request->setOption(CURLOPT_COOKIEJAR, APP_PATH.'storage/cookies/budget_cookie.txt' );
-        $request->setOption(CURLOPT_COOKIEFILE, APP_PATH.'storage/cookies/budget_cookie.txt');
-        $request->setOption(CURLOPT_USERAGENT, 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36');
-        $request->execute();
-        // echo $request->getRawResponse();
-        // exit;
+        //Search reservation, sets session search
         $request = new Request('https://www.budgettruck.com/DesktopModules/BudgetTruck.WebAPI/API/Home/SearchReservation');
         
         $request->setOption(CURLOPT_CUSTOMREQUEST, "POST");
@@ -117,7 +122,9 @@ class Budget extends Model {
         );
         
         $request->execute();
+        
         if ($request->isSuccessful()) {
+            $request->close();
             return true;
         }
         throw new Exception($resquest->getErrorMessage());
@@ -131,6 +138,12 @@ class Budget extends Model {
             touch(APP_PATH.'storage/cookies/budget_cookie.txt');
         }
         
+        $f = @fopen(APP_PATH.'storage/cookies/budget_cookie.txt', "r+");
+        if ($f !== false) {
+            ftruncate($f, 0);
+            fclose($f);
+        }
+        
         $request->setOption(CURLOPT_FOLLOWLOCATION, true);
         $request->setOption(CURLOPT_COOKIESESSION, true );
         $request->setOption(CURLOPT_COOKIEJAR, APP_PATH.'storage/cookies/budget_cookie.txt' );
@@ -139,6 +152,7 @@ class Budget extends Model {
         $request->execute();
         
         if ($request->isSuccessful()) {
+            $request->close();
             return true;
         }
         throw new Exception($resquest->getErrorMessage());

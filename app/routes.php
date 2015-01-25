@@ -47,4 +47,5 @@ foreach (Module::getModules() as $module) {
 }
 
 /** default routing */
-Route::get('/', 'HomeController:index');
+Route::get ('/', 'HomeController:index');
+Route::post('/', 'HomeController:search');
