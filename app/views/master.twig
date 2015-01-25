@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     {% for metaname, metavalue in meta %}
+    {% if metaname matches '/^og/' %}
+    <meta property="{{metaname}}" content="{{metavalue}}" />
+    {% else %}
     <meta name="{{metaname}}" value="{{metavalue}}" />
+    {% endif %}
     {% endfor %}
 
     <!-- publish javascript variable -->
