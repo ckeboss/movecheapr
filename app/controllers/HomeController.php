@@ -5,14 +5,19 @@ Class HomeController extends BaseController
 
     public function index()
     {
-        $this->loadJs('main.js');
-        // $uhaul  = new Uhaul();
-        // $budget = new Budget();
-        // $quote['uhaul'] = $uhaul->getQuote(new DateTime('2015-01-31'), '92618', '90210');
-        // $quote['budget'] = $budget->getQuote(new DateTime('2015-01-31'), '92618', '90210');
+        $this->loadCss('bootstrap-datetimepicker.min.css');
         
-        $this->data['title'] = 'Get the best price on a moving truck | Movecheapr';
+        $this->loadJs('https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js', ['location' => 'external']);
+        $this->loadJs('bootstrap-datetimepicker.min.js');
+        $this->loadJs('main.js');
+        
+        $this->data['title'] = 'Compare Moving Truck Prices | Movecheapr';
         App::render('index.twig', $this->data);
+    }
+    
+    public function learn_more() {
+        $this->data['title'] = 'What\'s the Deal? | Movecheapr';
+        App::render('learn-more.twig', $this->data);
     }
     
     public function search() {

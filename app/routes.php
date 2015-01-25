@@ -49,3 +49,5 @@
 /** default routing */
 Route::get ('/', 'HomeController:index');
 Route::post('/', 'HomeController:search');
+
+Route::get('/learn-more', 'HomeController:learn_more');

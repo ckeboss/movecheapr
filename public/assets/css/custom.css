@@ -1,3 +1,8 @@
+.jumbotron {
+    background-image: url('../images/footer_lodyas.png');
+    color: #dfdfdf;
+}
+
 /** navbar customisation */
 .navbar{
     min-height: 30px

@@ -26,6 +26,8 @@ $(function() {
             }
         });
     });
+    
+    $('#date').datetimepicker({minDate: moment(), format: 'MM/DD/YYYY', widgetPositioning: {horizontal: 'left'}});
 });
 
 //http://stackoverflow.com/questions/149055/how-can-i-format-numbers-as-money-in-javascript
